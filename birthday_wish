@@ -1,0 +1,33 @@
+import pandas as pd
+import smtplib
+from datetime import datetime
+from email.mime.text import MIMEText
+
+my_data = pd.read_csv("friends_list.csv")
+
+def send_mail(to, subject, body):
+    user = "user"
+    password = "pass"
+    
+    msg = MIMEText(body)
+    msg["Subject"] = subject
+    msg["From"] = user
+    msg["To"] = to
+
+    server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
+    server.login(user, password)
+    server.sendmail(user, [to], msg.as_string())
+    server.quit()
+
+def check_birthdays():
+    today = datetime.now().strftime('%m-%d')
+    
+    birthdays_today = my_data[pd.to_datetime(my_data["Birthday"]).dt.strftime('%m-%d') == today]
+    
+    for index, row in birthdays_today.iterrows():
+        name = row['Name']
+        to = row['Email']
+        
+        send_mail(to, "Happy Birthday to you!", f"Happy birthday, {name}!")
+                        
+check_birthdays()
