@@ -1,0 +1,94 @@
+rom selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.keys import Keys
+
+chrome_driver_path = r'C:\Users\tran-thimaichi\Desktop\chromedriver-win64\chromedriver-win64\chromedriver.exe'
+s = Service(chrome_driver_path)
+driver = webdriver.Chrome(service=s)
+driver.get("https://www.billboard.com/charts/hot-100/")
+driver.maximize_window()
+
+wait = WebDriverWait(driver, 20)
+selector = "h3.c-title.a-no-trucate"
+elements = wait.until(EC.visibility_of_all_elements_located((By.CSS_SELECTOR, selector)))
+song_titles = [title_element.text.strip() for title_element in elements[:10]]  
+video_links = []
+
+for item in song_titles:
+    driver.get("https://www.youtube.com/")
+    search_input = wait.until(EC.element_to_be_clickable((By.NAME, 'search_query')))
+    search_input.clear()
+    search_input.send_keys(item + " song") 
+    search_input.send_keys(Keys.RETURN)
+    
+    
+    wait.until(EC.visibility_of_element_located((By.TAG_NAME, 'ytd-video-renderer')))
+    
+  
+    videos = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'a#video-title')))
+    video_links.append(videos[0].get_attribute('href'))  # Assume the first one is the right video
+
+driver.quit()
+
+
+for link in video_links:
+    print(link)
+
+
+song_video_pairs = dict(zip(song_titles, video_links))
+
+# Start of your HTML message
+html_message = """
+<html>
+  <head></head>
+  <body>
+    <h1>Top 10 Songs Today</h1>
+    <p>Here are the top 10 trending songs:</p>
+    <ul>
+"""
+
+# Add each song and link to the HTML message
+for song, link in song_video_pairs.items():
+    html_message += f"<li><a href='{link}'>{song}</a></li>\n"
+
+# Close the HTML message
+html_message += """
+    </ul>
+  </body>
+</html>
+"""
+
+print(html_message)  # This will print the HTML content you're going to send
+
+
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+# Email variables
+sender_email = "tran.jp" 
+receiver_email = "t.com" 
+password = ""  
+subject = "Top 10 Trending Songs Today"
+
+# Set up the email server (Gmail in this example)
+server = smtplib.SMTP('smtp.gmail.com', 587)
+server.starttls()  # Start TLS encryption
+server.login(sender_email, password)
+
+# Create the email
+email = MIMEMultipart()
+email['From'] = sender_email
+email['To'] = receiver_email
+email['Subject'] = subject
+
+# Attach the HTML message
+email.attach(MIMEText(html_message, 'html'))
+
+# Send the email and close the server
+server.send_message(email)
+server.quit()
+
