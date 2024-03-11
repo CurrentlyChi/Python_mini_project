@@ -5,7 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.keys import Keys
 
-chrome_driver_path = r'C:\Users\tran-thimaichi\Desktop\chromedriver-win64\chromedriver-win64\chromedriver.exe'
+chrome_driver_path = r'4\chromedriver-win64\chromedriver.exe'
 s = Service(chrome_driver_path)
 driver = webdriver.Chrome(service=s)
 driver.get("https://www.billboard.com/charts/hot-100/")
@@ -29,7 +29,7 @@ for item in song_titles:
     
   
     videos = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'a#video-title')))
-    video_links.append(videos[0].get_attribute('href'))  # Assume the first one is the right video
+    video_links.append(videos[0].get_attribute('href'))  
 
 driver.quit()
 
@@ -50,18 +50,18 @@ html_message = """
     <ul>
 """
 
-# Add each song and link to the HTML message
+
 for song, link in song_video_pairs.items():
     html_message += f"<li><a href='{link}'>{song}</a></li>\n"
 
-# Close the HTML message
+
 html_message += """
     </ul>
   </body>
 </html>
 """
 
-print(html_message)  # This will print the HTML content you're going to send
+print(html_message) 
 
 
 import smtplib
